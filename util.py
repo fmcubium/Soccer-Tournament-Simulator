@@ -25,6 +25,7 @@ def rolling_averages(group, cols, new_cols):
 class MissingDict(dict):
     __missing__ = lambda self, key: key
 
+
 def fix_team_names(df):
     map_values = {
         # Serie A
@@ -55,5 +56,5 @@ def fix_team_names(df):
     }
 
     mapping = MissingDict(**map_values)
-    df["new_team"] = df["team"].map(mapping)
-    df["new_opponent"] = df["opponent"].map(mapping)
+    df["team"] = df["team"].map(mapping)
+    df["opponent"] = df["opponent"].map(mapping)
