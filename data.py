@@ -38,6 +38,9 @@ class Data:
                 self.team_codes[opp] = len(self.team_codes) + 1
 
         matches["opp_code"] = matches["opponent"].map(self.team_codes)
+        matches["gf"] = [gf[0] for gf in matches["gf"]]
+        matches["ga"] = [ga[0] for ga in matches["ga"]]
+        matches["target"] = [util.define_result(r) for r in matches["result"]]
 
         # Rolling averages
         cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt"]
