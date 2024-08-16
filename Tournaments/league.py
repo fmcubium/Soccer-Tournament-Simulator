@@ -73,6 +73,9 @@ def simulate(*args: str):
 
     # PHASE 2: Fit our model using our data - use the data for teams that are in the league
 
+    # Get the avgs & sds of this team's data and use a normal distribution for each param
+
+
     # PHASE 3: Run predictions and assign points, to determine our league ranking
 
 

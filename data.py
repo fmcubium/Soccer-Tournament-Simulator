@@ -43,7 +43,8 @@ class Data:
         matches["target"] = [util.define_result(r) for r in matches["result"]]
 
         # Rolling averages
-        cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt"]
+        cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
+                "fk_against", "pk_against", "pkatt_against"]
         new_cols = [f"{c}_rolling" for c in cols]
         matches_rolling = matches.groupby("team").apply(lambda x: util.rolling_averages(x, cols, new_cols))
         matches_rolling = matches_rolling.droplevel('team')
@@ -53,3 +54,17 @@ class Data:
         self.train = matches_rolling
         predictors = ["venue_code", "opp_code", "date_code"] + new_cols
         self.rf.fit(self.train[predictors], self.train["target"])
+
+    def averages(self, team: str):
+        group = self.train.groupby("team").get_group(team)
+        cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
+                "fk_against", "pk_against", "pkatt_against"]
+
+        return group[cols].mean()
+
+    def st_devs(self, team: str):
+        group = self.train.groupby("team").get_group(team)
+        cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
+                "fk_against", "pk_against", "pkatt_against"]
+
+        return group[cols].std(ddof=0)
