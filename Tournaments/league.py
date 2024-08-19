@@ -50,32 +50,32 @@ def apply_results(result, table: dict):
             table[result['team_code']] += 3
 
 
-def simulate(data):
+def simulate(data, teams: list):
     # PHASE 1: Prepare team data and create a fixture list
-    team_codes = {
-        "Inter": 1,
-        "Milan": 2,
-        "Juventus": 3,
-        "Atalanta": 4,
-        "Bologna": 5,
-        "Roma": 6,
-        "Lazio": 7,
-        "Fiorentina": 8,
-        "Torino": 9,
-        "Napoli": 10,
-    }
+    # team_codes = {
+    #     "Inter": 1,
+    #     "Milan": 2,
+    #     "Juventus": 3,
+    #     "Atalanta": 4,
+    #     "Bologna": 5,
+    #     "Roma": 6,
+    #     "Lazio": 7,
+    #     "Fiorentina": 8,
+    #     "Torino": 9,
+    #     "Napoli": 10,
+    # }
 
-    teams = ["Inter", "Milan", "Juventus", "Atalanta", "Bologna", "Roma", "Lazio", "Fiorentina", "Torino", "Napoli",
-             "Genoa", "Monza", "Hellas Verona", "Lecce", "Udinese", "Cagliari", "Empoli", "Parma", "Como", "Venezia"]
+    # teams = ["Inter", "Milan", "Juventus", "Atalanta", "Bologna", "Roma", "Lazio", "Fiorentina", "Torino", "Napoli",
+    #          "Genoa", "Monza", "Hellas Verona", "Lecce", "Udinese", "Cagliari", "Empoli", "Parma", "Como", "Venezia"]
     opp_codes = []
 
     # code to test - allows for adding new opponents we haven't seen before
     for team in teams:
-        if team_codes.get(team) is None:
-            team_codes[team] = len(team_codes) + 1
-        opp_codes.append(team_codes[team])
+        if data.team_codes.get(team) is None:
+            data.team_codes[team] = len(data.team_codes) + 1 #change
+        opp_codes.append(data.team_codes[team])
 
-    print(team_codes)
+    print(data.team_codes)
     print(opp_codes)
 
     fixtures = create_fixtures(opp_codes)
@@ -101,9 +101,9 @@ def simulate(data):
         match_arr[i][3] = fixtures[i // 10][i % 10][1]
 
         # Get the avgs & sds of this team's data and use a normal distribution for each param
-        team_pos = list(team_codes.values()).index(fixtures[i // 10][i % 10][0])
-        opp_pos = list(team_codes.values()).index(fixtures[i // 10][i % 10][1])
-        match_arr[i][4:17] = data.create_stats(list(team_codes.keys())[team_pos], list(team_codes.keys())[opp_pos])
+        team_pos = list(data.team_codes.values()).index(fixtures[i // 10][i % 10][0])
+        opp_pos = list(data.team_codes.values()).index(fixtures[i // 10][i % 10][1])
+        match_arr[i][4:] = np.array(data.create_stats(list(data.team_codes.keys())[team_pos], list(data.team_codes.keys())[opp_pos]))
 
     # Transform into dataframe
     cols = ["venue_code", "team_code", "date_code", "opp_code", "gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt",
@@ -131,5 +131,3 @@ def simulate(data):
     final_table = pd.DataFrame({key: val for key, val in sorted(table.items(), key=lambda y: y[1], reverse=True)}, columns=['team', 'points'])
     print(final_table)
 
-
-simulate()

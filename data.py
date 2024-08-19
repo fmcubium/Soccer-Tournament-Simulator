@@ -28,6 +28,7 @@ class Data:
                     start = i
                     break
             matches = matches.replace(to_replace=opp, value=opp[start:])
+        util.fix_team_names(matches)
 
         # predictors
         matches['venue_code'] = matches["venue"].astype("category").cat.codes
@@ -65,7 +66,7 @@ class Data:
         cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
                 "fk_against", "pk_against", "pkatt_against"]
 
-        return group[cols].mean()
+        return group[cols].dropna().mean(numeric_only=True)
 
     def st_devs(self, team: str, opponent=None):
         group = self.train.groupby("team").get_group(team)
@@ -75,12 +76,13 @@ class Data:
         cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
                 "fk_against", "pk_against", "pkatt_against"]
 
-        return group[cols].std(ddof=0)
+        return group[cols].dropna().std(ddof=0, numeric_only=True)
 
     def create_stats(self, team: str, opponent: str):
         # Create 2 random normal variables for 1. Overall stats and 2. stats vs opponent
         rng = numpy.random.default_rng()
 
+        # missing gf and ga
         overall_avgs = np.array(self.averages(team))
         overall_stds = np.array(self.st_devs(team))
 
