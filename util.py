@@ -22,6 +22,15 @@ def rolling_averages(group, cols, new_cols):
     return group
 
 
+def rolling_averages_2(group, cols, new_cols):
+    group = group.sort_values("date_code")
+    rolling_stats = group[cols].rolling(3, closed='left').mean()  # closed ensures no future data
+    group[new_cols] = rolling_stats
+    group = group.fillna(0, subset=new_cols)
+
+    return group
+
+
 class MissingDict(dict):
     __missing__ = lambda self, key: key
 

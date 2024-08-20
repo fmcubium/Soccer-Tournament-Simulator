@@ -89,6 +89,12 @@ class Data:
         opponent_avgs = np.array(self.averages(team, opponent))
         opponent_stds = np.array(self.averages(team, opponent))
 
+        # Convert NaN to 0
+        overall_avgs[np.isnan(overall_avgs)] = 0
+        overall_stds[np.isnan(overall_stds)] = 0
+        opponent_avgs[np.isnan(opponent_avgs)] = 0
+        opponent_stds[np.isnan(opponent_stds)] = 0
+
         # Apply weights w1 and w2
         w1 = 1.00
         w2 = 0.10

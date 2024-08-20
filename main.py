@@ -13,10 +13,8 @@ def create_league(_data):
         team = input(teams)
         if team == "":
             inserting = False
-        elif (_data.train == team).any().any():
-            teams.append(team)
         else:
-            raise ValueError
+            teams.append(team)
 
     print(teams)
     print("Team selection complete! Creating league...")
@@ -39,7 +37,7 @@ def main():
     # Program loop
     on = True
     while on:
-        # try:
+        try:
             sel1 = int(input("Enter: 1. Choose tournament type 2. Exit \n"))
             match sel1:
                 case 1:
@@ -63,11 +61,11 @@ def main():
                             pass
                 case 2:
                     on = False
-        # except ValueError:
-        #
-        #     print("You have an input error. Either you selected an invalid number, inserted an invalid number of \n"
-        #           "teams into a tournament, or inserted a team into a tournament that is not in the data. \n"
-        #           "Resetting...")
+        except ValueError:
+
+            print("You have an input error. Either you selected an invalid number, inserted an invalid number of \n"
+                  "teams into a tournament, or inserted a team into a tournament that is not in the data. \n"
+                  "Resetting...")
 
 
 if __name__ == '__main__':

@@ -72,7 +72,7 @@ def simulate(data, teams: list):
     # code to test - allows for adding new opponents we haven't seen before
     for team in teams:
         if data.team_codes.get(team) is None:
-            data.team_codes[team] = len(data.team_codes) + 1 #change
+            data.team_codes[team] = len(data.team_codes)*10 + 1 #change
         opp_codes.append(data.team_codes[team])
 
     print(data.team_codes)
@@ -92,18 +92,18 @@ def simulate(data, teams: list):
         match_arr[i][0] = 1
 
         # team code
-        match_arr[i][1] = fixtures[i // 10][i % 10][0]
+        match_arr[i][1] = fixtures[i // (len(opp_codes) // 2)][i % (len(opp_codes)//2)][0]
 
         # date code
-        match_arr[i][2] = i // 10
+        match_arr[i][2] = i // (len(opp_codes)//2)
 
         # opponent code
-        match_arr[i][3] = fixtures[i // 10][i % 10][1]
+        match_arr[i][3] = fixtures[i // (len(opp_codes)//2)][i % (len(opp_codes)//2)][1]
 
         # Get the avgs & sds of this team's data and use a normal distribution for each param
-        team_pos = list(data.team_codes.values()).index(fixtures[i // 10][i % 10][0])
-        opp_pos = list(data.team_codes.values()).index(fixtures[i // 10][i % 10][1])
-        match_arr[i][4:] = np.array(data.create_stats(list(data.team_codes.keys())[team_pos], list(data.team_codes.keys())[opp_pos]))
+        team_pos = list(data.team_codes.values()).index(fixtures[i // (len(opp_codes)//2)][i % (len(opp_codes)//2)][0])
+        opp_pos = list(data.team_codes.values()).index(fixtures[i // (len(opp_codes)//2)][i % (len(opp_codes)//2)][1])
+        match_arr[i][6:] = np.array(data.create_stats(list(data.team_codes.keys())[team_pos], list(data.team_codes.keys())[opp_pos]))
 
     # Transform into dataframe
     cols = ["venue_code", "team_code", "date_code", "opp_code", "gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt",
@@ -113,21 +113,28 @@ def simulate(data, teams: list):
 
     cols = cols[4:]
     new_cols = [f"{c}_rolling" for c in cols]
-    matches_rolling = matches.groupby("team").apply(lambda x: util.rolling_averages(x, cols, new_cols))
-    matches_rolling = matches_rolling.droplevel('team')
+    matches_rolling = matches.groupby("team_code").apply(lambda x: util.rolling_averages_2(x, cols, new_cols))
+    matches_rolling = matches_rolling.droplevel('team_code')
     matches_rolling.index = range(matches_rolling.shape[0])
 
     # PHASE 3: Run predictions and assign points, to determine our league ranking
     # The fun part - running the simulation
     predictors = ["venue_code", "opp_code", "date_code"] + new_cols
-    predictions = pd.Series(data.rf.predict(matches_rolling[predictors]), index="prediction")
+    predictions = pd.Series(data.rf.predict(matches_rolling[predictors]), name='prediction')
     results = matches_rolling[["team_code", "opp_code"]]
-    results = results.merge(predictions)
+    results['prediction'] = predictions
 
     # Now that our sim is done, we simply add up the points
     table = dict(zip(opp_codes, [0] * len(opp_codes)))
     results.apply(lambda x: apply_results(x, table), axis=1)
 
-    final_table = pd.DataFrame({key: val for key, val in sorted(table.items(), key=lambda y: y[1], reverse=True)}, columns=['team', 'points'])
+    #for t in table.values():
+    #    team_pos = list(data.team_codes.values()).index(t)
+    team_names = [list(data.team_codes.keys())[list(data.team_codes.values()).index(t)] for t in table.keys()]
+
+    table_dict = {'team': team_names,
+                  'points': table.values()}
+
+    final_table = pd.DataFrame.from_dict(table_dict).sort_values('points', ascending=False)
     print(final_table)
 
