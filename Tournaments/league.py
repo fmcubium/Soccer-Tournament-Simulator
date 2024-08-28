@@ -103,7 +103,7 @@ def simulate(data, teams: list):
         # Get the avgs & sds of this team's data and use a normal distribution for each param
         team_pos = list(data.team_codes.values()).index(fixtures[i // (len(opp_codes)//2)][i % (len(opp_codes)//2)][0])
         opp_pos = list(data.team_codes.values()).index(fixtures[i // (len(opp_codes)//2)][i % (len(opp_codes)//2)][1])
-        match_arr[i][6:] = np.array(data.create_stats(list(data.team_codes.keys())[team_pos], list(data.team_codes.keys())[opp_pos]))
+        match_arr[i][4:] = np.array(data.create_stats(list(data.team_codes.keys())[team_pos], list(data.team_codes.keys())[opp_pos])) # Last error to be fixed
 
     # Transform into dataframe
     cols = ["venue_code", "team_code", "date_code", "opp_code", "gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt",
@@ -128,8 +128,6 @@ def simulate(data, teams: list):
     table = dict(zip(opp_codes, [0] * len(opp_codes)))
     results.apply(lambda x: apply_results(x, table), axis=1)
 
-    #for t in table.values():
-    #    team_pos = list(data.team_codes.values()).index(t)
     team_names = [list(data.team_codes.keys())[list(data.team_codes.values()).index(t)] for t in table.keys()]
 
     table_dict = {'team': team_names,

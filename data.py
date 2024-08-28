@@ -59,24 +59,32 @@ class Data:
         self.rf.fit(self.train[predictors], self.train["target"])
 
     def averages(self, team: str, opponent=None):
-        group = self.train.groupby("team").get_group(team)
-        if opponent is not None:
-            group = group[group["opponent"] == opponent]
+        ret = [0] * 14
+        if team in self.train["team"].unique():
+            group = self.train.groupby("team").get_group(team) # Error here is happening because the team has no data
+            if opponent is not None:
+                group = group[group["opponent"] == opponent]
 
-        cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
-                "fk_against", "pk_against", "pkatt_against"]
+            cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
+                    "fk_against", "pk_against", "pkatt_against"]
 
-        return group[cols].dropna().mean(numeric_only=True)
+            ret = group[cols].dropna().mean(numeric_only=True)
+
+        return ret
 
     def st_devs(self, team: str, opponent=None):
-        group = self.train.groupby("team").get_group(team)
-        if opponent is not None:
-            group = group[group["opponent"] == opponent]
+        ret = [0] * 14
+        if team in self.train["team"].unique():
+            group = self.train.groupby("team").get_group(team) # see this line in averages
+            if opponent is not None:
+                group = group[group["opponent"] == opponent]
 
-        cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
-                "fk_against", "pk_against", "pkatt_against"]
+            cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
+                    "fk_against", "pk_against", "pkatt_against"]
 
-        return group[cols].dropna().std(ddof=0, numeric_only=True)
+            ret = group[cols].dropna().std(ddof=0, numeric_only=True)
+
+        return ret
 
     def create_stats(self, team: str, opponent: str):
         # Create 2 random normal variables for 1. Overall stats and 2. stats vs opponent
