@@ -41,8 +41,8 @@ class Data:
                 self.team_codes[opp] = len(self.team_codes) + 1
 
         matches["opp_code"] = matches["opponent"].map(self.team_codes)
-        matches["gf"] = [gf[0] for gf in matches["gf"]]
-        matches["ga"] = [ga[0] for ga in matches["ga"]]
+        matches["gf"] = [float(gf[0]) for gf in matches["gf"]]
+        matches["ga"] = [float(ga[0]) for ga in matches["ga"]]
         matches["target"] = [util.define_result(r) for r in matches["result"]]
 
         # Rolling averages
@@ -68,7 +68,7 @@ class Data:
             cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
                     "fk_against", "pk_against", "pkatt_against"]
 
-            ret = group[cols].dropna().mean(numeric_only=True)
+            ret = group[cols].fillna(0).mean()
 
         return ret
 
@@ -82,7 +82,7 @@ class Data:
             cols = ["gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt", "sh_against", "sot_against", "dist_against",
                     "fk_against", "pk_against", "pkatt_against"]
 
-            ret = group[cols].dropna().std(ddof=0, numeric_only=True)
+            ret = group[cols].fillna(0).std(ddof=0, numeric_only=True)
 
         return ret
 

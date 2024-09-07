@@ -1,5 +1,6 @@
 import Tournaments.league
 import data
+import util
 from Tournaments import *
 
 
@@ -17,6 +18,7 @@ def create_league(_data):
             teams.append(team)
 
     print(teams)
+    util.fix_team_names_list(teams)
     print("Team selection complete! Creating league...")
     # if len(teams) != 0 or len(teams) & (len(teams) - 1) != 0: //Wrong condition but will be useful later (checking
     # 2^n)
