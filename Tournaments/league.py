@@ -104,7 +104,6 @@ def simulate(data, teams: list):
         team_pos = list(data.team_codes.values()).index(fixtures[i // (len(opp_codes)//2)][i % (len(opp_codes)//2)][0])
         opp_pos = list(data.team_codes.values()).index(fixtures[i // (len(opp_codes)//2)][i % (len(opp_codes)//2)][1])
         match_arr[i][4:] = np.array(data.create_stats(list(data.team_codes.keys())[team_pos], list(data.team_codes.keys())[opp_pos]))
-        # Its converting gf and ga into strings with each entry wtffffffff
 
     # Transform into dataframe
     cols = ["venue_code", "team_code", "date_code", "opp_code", "gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt",
