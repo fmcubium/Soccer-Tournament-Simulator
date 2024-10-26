@@ -7,20 +7,26 @@ import pandas as pd
 
 
 class Node:
-    def __init__(self):
-        self.val = ""
-        self.left = None
-        self.right = None
-        self.height = 0
-
-    def __init__(self, value):
-        self.val = value
-        self.left = None
-        self.right = None
-        self.height = 0
-
+    def __init__(self, val="", left=None, right=None, height=0):
+        self.val = val
+        self.left = left
+        self.right = right
+        self.height = height
 
 # Our actual knockout tournament code
+
+def apply_result(result, strs: list):
+    match result['prediction']:
+        case 2:
+            strs[0] = strs[1]
+
+        case 0:
+            strs[0] = strs[2]
+        case 1:
+            # if we have a draw, penalties :)
+            cmps = [strs[1], strs[2]]
+            random.shuffle(cmps)
+            strs[0] = cmps[0]
 
 def preorder_builder(node: Node, teams: list, h: int):
     # if h == 1 set the team and return
@@ -54,45 +60,53 @@ def sim_helper(data, node: Node):
     if node.left is None:
         return
 
-    sim_helper(node.left)
-    sim_helper(node.right)
+    sim_helper(data, node.left)
+    sim_helper(data, node.right)
 
     home = node.left.val
     away = node.right.val
 
     # create match, look at league code - We will use node.left for the subject of this matcharr
-    match_arr = np.zeros(18, dtype=int)
-    match_arr[0] = 1  # venue code
-    match_arr[1] = data.team_codes[home]  # team code
-    match_arr[2] = node.height - 1  # date code
-    match_arr[3] = data.team_codes[away]  # opponent code
-    match_arr[4:] = np.array(data.create_stats(home, away))
+    match_arr = np.zeros((1, 18), dtype=int)
+    match_arr[0][0] = 1  # venue code
+    match_arr[0][1] = data.team_codes[home]  # team code
+    match_arr[0][2] = data.team_codes[away]  # opponent code
+    match_arr[0][3] = node.height - 1  # date code
+    match_arr[0][4:] = np.array(data.create_stats(home, away))
 
-    # transform into dataframe
-    cols = ["venue_code", "team_code", "date_code", "opp_code", "gf", "ga", "sh", "sot", "dist", "fk", "pk", "pkatt",
-            "sh_against", "sot_against", "dist_against",
-            "fk_against", "pk_against", "pkatt_against"]
+    # transform into dataframe (silly hack that's technically not true)
+    cols = ["venue_code", "team_code", "opp_code", "date_code", "gf_rolling", "ga_rolling", "sh_rolling", "sot_rolling",
+            "dist_rolling", "fk_rolling", "pk_rolling", "pkatt_rolling", "sh_against_rolling", "sot_against_rolling",
+            "dist_against_rolling", "fk_against_rolling", "pk_against_rolling", "pkatt_against_rolling"]
     match = pd.DataFrame(match_arr, columns=cols)
 
+    newCols = ["venue_code", "opp_code", "date_code", "gf_rolling", "ga_rolling", "sh_rolling", "sot_rolling",
+            "dist_rolling", "fk_rolling", "pk_rolling", "pkatt_rolling", "sh_against_rolling", "sot_against_rolling",
+            "dist_against_rolling", "fk_against_rolling", "pk_against_rolling", "pkatt_against_rolling"]
+    predictors = match[newCols]
+
     # simulate it
-    predictions = pd.Series(data.rf.predict(match), name='prediction')
+    predictions = pd.Series(data.rf.predict(predictors), name='prediction')
     results = match[["team_code", "opp_code"]]
-    results['prediction'] = predictions
+    results.loc[:, 'prediction'] = predictions
 
     winner = ""  # fix later
-    match results['prediction']:
-        case 2:
-            winner = home
-        case 0:
-            winner = away
-        case 1:
-            # if we have a draw, penalties :)
-            cmps = [home, away]
-            random.shuffle(cmps)
-            winner = cmps[0]
+    strs = [winner, home, away]
 
-    node.val = winner
-    print(f"match: {home} vs. {away} __________ winner: {winner}")
+    results.apply(lambda x: apply_result(x, strs), axis=1)
+    # match results['prediction']:
+    #     case 2:
+    #         winner = home
+    #     case 0:
+    #         winner = away
+    #     case 1:
+    #         # if we have a draw, penalties :)
+    #         cmps = [home, away]
+    #         random.shuffle(cmps)
+    #         winner = cmps[0]
+
+    node.val = strs[0]
+    print(f"match: {home} vs. {away} __________ winner: {strs[0]}")
     return
 
 

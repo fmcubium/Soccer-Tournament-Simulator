@@ -122,7 +122,7 @@ def simulate(data, teams: list):
     predictors = ["venue_code", "opp_code", "date_code"] + new_cols
     predictions = pd.Series(data.rf.predict(matches_rolling[predictors]), name='prediction')
     results = matches_rolling[["team_code", "opp_code"]]
-    results['prediction'] = predictions
+    results.loc[:, 'prediction'] = predictions
 
     # Now that our sim is done, we simply add up the points
     table = dict(zip(opp_codes, [0] * len(opp_codes)))
@@ -135,4 +135,7 @@ def simulate(data, teams: list):
 
     final_table = pd.DataFrame.from_dict(table_dict).sort_values('points', ascending=False)
     print(final_table)
+
+    top_two = final_table.head(2)['team'].tolist()
+    return top_two
 
